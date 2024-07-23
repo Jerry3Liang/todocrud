@@ -1,30 +1,81 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router';
-</script>
-
 <template>
-  <h1>Hello Vue</h1>
-  <form>
-    <div class="mb-3">
-      <label for="exampleInputEmail1" class="form-label">Email address</label>
+  <h1 style="margin-top: 20px">請填寫代辦事項</h1>
+  <div class="s1">
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="inputGroup-sizing-default">姓名</span>
       <input
-        type="email"
+        v-model="name"
+        type="text"
         class="form-control"
-        id="exampleInputEmail1"
-        aria-describedby="emailHelp"
+        aria-label="Sizing example input"
+        aria-describedby="inputGroup-sizing-default"
       />
-      <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
     </div>
-    <div class="mb-3">
-      <label for="exampleInputPassword1" class="form-label">Password</label>
-      <input type="password" class="form-control" id="exampleInputPassword1" />
+    <div class="input-group mb-3">
+      <span class="input-group-text" id="inputGroup-sizing-default">代辦標題</span>
+      <input
+        v-model="title"
+        type="text"
+        class="form-control"
+        aria-label="Sizing example input"
+        aria-describedby="inputGroup-sizing-default"
+      />
     </div>
-    <div class="mb-3 form-check">
-      <input type="checkbox" class="form-check-input" id="exampleCheck1" />
-      <label class="form-check-label" for="exampleCheck1">Check me out</label>
+    <div class="input-group mb-3" style="height: 300px">
+      <span class="input-group-text" id="inputGroup-sizing-default">代辦內容</span>
+      <textarea
+        v-model="todoContent"
+        class="form-control"
+        aria-label="Sizing example input"
+        aria-describedby="inputGroup-sizing-default"
+      ></textarea>
     </div>
-    <button type="submit" class="btn btn-primary">Submit</button>
-  </form>
+    <button type="button" class="btn btn-success" @click="insertNoteInfo()">儲存</button>
+  </div>
+  <RouterView></RouterView>
 </template>
 
-<style scoped></style>
+<script setup>
+import axiosApi from 'axios';
+import { RouterView, useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+
+const router = useRouter();
+
+// 填寫代辦事項
+const name = ref('');
+const title = ref('');
+const todoContent = ref('');
+
+const insertNoteInfo = async () => {
+  console.log('call insertNoteInfo');
+  let data = {
+    name: name.value,
+    title: title.value,
+    todoContent: todoContent.value
+  };
+  const response = await axiosApi.post('https://192.168.233.40/todo/api/Todo/InsertTodo', data);
+
+  router.push({ name: 'data-app' });
+  name.value = '';
+  title.value = '';
+  todoContent.value = '';
+  console.log(response.data);
+};
+
+// onMounted(async () => {});
+</script>
+
+<style scoped>
+.s1 {
+  width: 400px;
+  margin: 10px 10px 10px 10px;
+  padding: 10px 10px 10px 10px;
+  border-color: seagreen;
+  border-style: solid;
+  border-radius: 3%;
+}
+
+.input-group {
+}
+</style>
