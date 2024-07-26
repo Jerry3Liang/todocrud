@@ -1,81 +1,107 @@
 <template>
-  <h1 style="margin-top: 20px">請填寫代辦事項</h1>
-  <div class="s1">
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="inputGroup-sizing-default">姓名</span>
-      <input
-        v-model="name"
-        type="text"
-        class="form-control"
-        aria-label="Sizing example input"
-        aria-describedby="inputGroup-sizing-default"
-      />
-    </div>
-    <div class="input-group mb-3">
-      <span class="input-group-text" id="inputGroup-sizing-default">代辦標題</span>
-      <input
-        v-model="title"
-        type="text"
-        class="form-control"
-        aria-label="Sizing example input"
-        aria-describedby="inputGroup-sizing-default"
-      />
-    </div>
-    <div class="input-group mb-3" style="height: 300px">
-      <span class="input-group-text" id="inputGroup-sizing-default">代辦內容</span>
-      <textarea
-        v-model="todoContent"
-        class="form-control"
-        aria-label="Sizing example input"
-        aria-describedby="inputGroup-sizing-default"
-      ></textarea>
-    </div>
-    <button type="button" class="btn btn-success" @click="insertNoteInfo()">儲存</button>
-  </div>
   <RouterView></RouterView>
+  <RouterLink
+    :to="{ name: 'insert-note' }"
+    type="button"
+    class="btn btn-success"
+    style="margin-left: 10px"
+    >新增</RouterLink
+  >
+  <div>
+    <h1>show Note</h1>
+    <div class="note" v-for="note in NoteInfo" :key="note.todoId">
+      <span>{{ note.name }}</span
+      >/
+      <span>{{ note.title }}</span>
+      <p v-if="note.isComplete !== 'Y'">未完成</p>
+      <p v-if="note.isComplete === 'Y'">已完成 | {{ note.completeTime }}</p>
+      <p>{{ note.todoContent }}</p>
+      <button
+        type="button"
+        class="btn btn-success"
+        @click="updateTodoStatus(note.todoId)"
+        v-if="note.isComplete !== 'Y'"
+      >
+        完成
+      </button>
+      <RouterLink
+        :to="{ name: 'update-note', query: { todoId: note.todoId } }"
+        type="button"
+        class="btn btn-success"
+        style="margin-left: 10px"
+        >編輯</RouterLink
+      >
+      <!-- <button
+        type="button"
+        class="btn btn-success"
+        @click="deleverNote(note)"
+        style="margin-left: 10px"
+      >
+        編輯
+      </button> -->
+      <button
+        type="button"
+        class="btn btn-success"
+        @click="deleteNote(note.todoId)"
+        style="margin-left: 10px"
+      >
+        刪除
+      </button>
+    </div>
+  </div>
 </template>
 
 <script setup>
 import axiosApi from 'axios';
-import { RouterView, useRouter } from 'vue-router';
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
+import InsertNote from './views/InsertNote.vue';
+import { RouterLink } from 'vue-router';
 
-const router = useRouter();
+const NoteInfo = ref(null);
 
-// 填寫代辦事項
-const name = ref('');
-const title = ref('');
-const todoContent = ref('');
+// 取得 note 資料
+const getNoteInfo = async () => {
+  console.log('call getNoteInfo');
+  const response = await axiosApi.get('https://192.168.233.40/todo/api/Todo/Get');
 
-const insertNoteInfo = async () => {
-  console.log('call insertNoteInfo');
-  let data = {
-    name: name.value,
-    title: title.value,
-    todoContent: todoContent.value
-  };
-  const response = await axiosApi.post('https://192.168.233.40/todo/api/Todo/InsertTodo', data);
-
-  router.push({ name: 'data-app' });
-  name.value = '';
-  title.value = '';
-  todoContent.value = '';
-  console.log(response.data);
+  NoteInfo.value = response.data.returnData;
+  console.log(NoteInfo.value);
 };
 
-// onMounted(async () => {});
+onMounted(async () => {
+  await getNoteInfo();
+});
+
+//更新 note 完成狀態
+const updateTodoStatus = async (todoId) => {
+  console.log('call updateTodoStatus');
+  let data = {
+    todoId: todoId,
+    isComplete: 'Y'
+  };
+
+  const response = await axiosApi.put(
+    `https://192.168.233.40/todo/api/Todo/UpdateTodoStatus/${todoId}`,
+    data
+  );
+  window.location.reload();
+};
+
+//刪除 note
+const deleteNote = async (todoId) => {
+  console.log('call deleteNote');
+  const response = await axiosApi.delete(`https://192.168.233.40/todo/api/Todo/Delete/${todoId}`);
+  window.location.reload();
+};
 </script>
 
 <style scoped>
-.s1 {
-  width: 400px;
-  margin: 10px 10px 10px 10px;
-  padding: 10px 10px 10px 10px;
-  border-color: seagreen;
+.note {
+  flex: 1;
+  margin-bottom: 5px;
+  background-color: seashell;
+  border-color: silver;
   border-style: solid;
   border-radius: 3%;
-}
-
-.input-group {
 }
 </style>
