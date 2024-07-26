@@ -16,7 +16,14 @@
       完成
     </button>
     <button type="button" class="btn btn-success" @click="" style="margin-left: 10px">編輯</button>
-    <button type="button" class="btn btn-success" @click="" style="margin-left: 10px">刪除</button>
+    <button
+      type="button"
+      class="btn btn-success"
+      @click="deleteNote(note.todoId)"
+      style="margin-left: 10px"
+    >
+      刪除
+    </button>
   </div>
 </template>
 
@@ -40,6 +47,7 @@ onMounted(async () => {
   await getNoteInfo();
 });
 
+//更新 note 完成狀態
 const updateTodoStatus = async (todoId) => {
   console.log('call updateTodoStatus');
   let data = {
@@ -51,6 +59,14 @@ const updateTodoStatus = async (todoId) => {
     `https://192.168.233.40/todo/api/Todo/UpdateTodoStatus/${todoId}`,
     data
   );
+};
+
+//刪除 note
+const deleteNote = async (todoId) => {
+  console.log('call deleteNote');
+  const response = await axiosApi.delete(`https://192.168.233.40/todo/api/Todo/Delete/${todoId}`);
+  window.location.reload();
+  console.log('finish deleteNote');
 };
 </script>
 
